@@ -1,0 +1,252 @@
+<!doctype html>
+<html>
+<head>
+<title>Team Hand Cricket</title>
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:linear-gradient(to bottom,#0f2027,#203a43,#2c5364);
+    color:white;
+    text-align:center;
+}
+h1{margin:15px;}
+.container{
+    background:rgba(0,0,0,0.6);
+    padding:20px;
+    border-radius:15px;
+    display:inline-block;
+}
+input,button,select{
+    padding:10px;
+    font-size:16px;
+    border-radius:8px;
+    margin:5px;
+}
+canvas{
+    background:#1b5e20;
+    margin-top:15px;
+    border-radius:10px;
+}
+.choices button{
+    width:50px;height:50px;
+    margin:5px;
+    font-size:18px;
+    border-radius:50%;
+    border:none;
+    background:orange;
+    cursor:pointer;
+    transition:0.2s;
+}
+.choices button:hover{transform:scale(1.1);}
+#status{margin-top:10px;font-size:18px;}
+#wicketsLog{
+    margin-top:10px;
+    text-align:left;
+    max-height:150px;
+    overflow-y:auto;
+}
+table{
+    margin:15px auto;
+    border-collapse:collapse;
+    background:rgba(255,255,255,0.1);
+}
+th,td{
+    border:1px solid white;
+    padding:8px 12px;
+}
+th{
+    background:rgba(0,0,0,0.7);
+}
+</style>
+</head>
+<body>
+
+<h1>🏏 Team Hand Cricket</h1>
+
+<div class="container" id="setup">
+    <h3>Enter number of players (max 11):</h3>
+    <input type="number" id="players" min="1" max="11">
+    <h3>Choose Head or Tail for toss:</h3>
+    <select id="tossChoice">
+        <option value="Head">Head</option>
+        <option value="Tail">Tail</option>
+    </select>
+    <br>
+    <button onclick="startGame()">Start Toss</button>
+</div>
+
+<div class="container" id="game" style="display:none;">
+    <h3 id="info"></h3>
+    <h4 id="score">Player: 0 | Computer: 0</h4>
+    <canvas id="pitch" width="300" height="300"></canvas>
+    <div class="choices" id="batChoices">
+        <button onclick="playerPlay(1)">1</button>
+        <button onclick="playerPlay(2)">2</button>
+        <button onclick="playerPlay(3)">3</button>
+        <button onclick="playerPlay(4)">4</button>
+        <button onclick="playerPlay(5)">5</button>
+        <button onclick="playerPlay(6)">6</button>
+    </div>
+    <p id="status"></p>
+    <div id="wicketsLog"></div>
+</div>
+
+<div class="container" id="summary" style="display:none;">
+    <h2>🏆 Match Summary</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Wicket</th>
+                <th>Player Runs</th>
+                <th>Computer Runs</th>
+            </tr>
+        </thead>
+        <tbody id="summaryBody">
+        </tbody>
+    </table>
+    <h3 id="winner"></h3>
+</div>
+
+<script>
+let totalPlayers, playerScore=0, compScore=0, currentWicket=0, innings=1, target=0;
+let firstBatsman=null;
+let playerRuns=[], compRuns=[];
+
+// Canvas draw
+function drawBall(playerRun, compRun){
+    let c=document.getElementById("pitch");
+    let ctx=c.getContext("2d");
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.fillStyle="#c2a36b"; ctx.fillRect(120,0,60,300);
+
+    ctx.fillStyle="white";
+    ctx.beginPath(); ctx.arc(50,150,10,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="red";
+    ctx.beginPath(); ctx.arc(250,150,10,0,Math.PI*2); ctx.fill();
+
+    ctx.fillStyle="white"; ctx.fillText("You: "+playerRun,30,50);
+    ctx.fillText("Comp: "+compRun,200,50);
+}
+
+// Start toss + game
+function startGame(){
+    totalPlayers=parseInt(document.getElementById("players").value);
+    if(!totalPlayers||totalPlayers<1||totalPlayers>11){alert("Enter 1-11 players"); return;}
+
+    let userToss=document.getElementById("tossChoice").value;
+    let tossResult=Math.random()<0.5?"Head":"Tail";
+
+    if(userToss===tossResult){
+        firstBatsman=prompt("You won toss! Type 'Bat' or 'Bowl'").toLowerCase()==="bat"?"Player":"Computer";
+        alert("You won toss! "+firstBatsman+" bats first.");
+    }else{
+        firstBatsman=Math.random()<0.5?"Player":"Computer";
+        alert("Computer won toss! "+firstBatsman+" bats first.");
+    }
+
+    document.getElementById("setup").style.display="none";
+    document.getElementById("game").style.display="block";
+    document.getElementById("info").innerText = firstBatsman+" bats first";
+
+    if(firstBatsman==="Computer") computerPlay();
+}
+
+// Player play
+function playerPlay(run){
+    let compRun=Math.floor(Math.random()*6)+1;
+    drawBall(run, compRun);
+
+    if(firstBatsman==="Player"){
+        if(innings===1){
+            if(run===compRun){playerOut();}
+            else{playerScore+=run; playerRuns.push(run);}
+        }else{
+            if(run===compRun){compOut();}
+            else{compScore+=compRun; compRuns.push(compRun);}
+            if(compScore>target) endGame();
+        }
+    }else{
+        if(innings===1){
+            if(run===compRun){compOut();}
+            else{compScore+=compRun; compRuns.push(compRun);}
+        }else{
+            if(run===compRun){playerOut();}
+            else{playerScore+=run; playerRuns.push(run);}
+            if(playerScore>target) endGame();
+        }
+    }
+    updateScore();
+}
+
+function logWicket(team, wicketNo){
+    let log=document.getElementById("wicketsLog");
+    let remaining=totalPlayers-wicketNo;
+    log.innerHTML+=`💀 ${team} Wicket ${wicketNo} Gone! | ${remaining} remaining<br>`;
+    log.scrollTop = log.scrollHeight;
+}
+
+function playerOut(){ 
+    currentWicket++;
+    logWicket("Player", currentWicket);
+    if(innings===1 && currentWicket>=totalPlayers){
+        innings=2; currentWicket=0;
+        target=playerScore+1;
+        document.getElementById("status").innerText="1st innings over. Target: "+target;
+        if(firstBatsman==="Computer") computerPlay();
+    }else if(innings===2 && currentWicket>=totalPlayers){endGame();}
+}
+function compOut(){ 
+    currentWicket++;
+    logWicket("Computer", currentWicket);
+    if(innings===1 && currentWicket>=totalPlayers){
+        innings=2; currentWicket=0;
+        target=compScore+1;
+        document.getElementById("status").innerText="1st innings over. Target: "+target;
+    }else if(innings===2 && currentWicket>=totalPlayers){endGame();}
+}
+
+// Computer automated play
+function computerPlay(){
+    let interval=setInterval(()=>{
+        if(currentWicket>=totalPlayers || (innings===2 && compScore>target)){clearInterval(interval); if(innings===2) endGame(); return;}
+        let compRun=Math.floor(Math.random()*6)+1;
+        let playerRun=Math.floor(Math.random()*6)+1; // dummy
+        drawBall(playerRun, compRun);
+
+        if(compRun===playerRun){compOut();}
+        else{compScore+=compRun; compRuns.push(compRun);}
+        updateScore();
+    },600);
+}
+
+function updateScore(){
+    document.getElementById("score").innerText="Player: "+playerScore+" | Computer: "+compScore;
+}
+
+// End Game + summary
+function endGame(){
+    document.getElementById("game").style.display="none";
+    document.getElementById("summary").style.display="block";
+
+    let tbody=document.getElementById("summaryBody");
+    tbody.innerHTML="";
+    for(let i=0;i<totalPlayers;i++){
+        tbody.innerHTML+=`<tr>
+            <td>${i+1}</td>
+            <td>${playerRuns[i]||0}</td>
+            <td>${compRuns[i]||0}</td>
+        </tr>`;
+    }
+
+    let winner="";
+    if(playerScore>compScore) winner="🎉 Player Wins!";
+    else if(compScore>playerScore) winner="💻 Computer Wins!";
+    else winner="🤝 Draw!";
+    document.getElementById("winner").innerText=winner;
+
+    document.querySelectorAll(".choices button").forEach(b=>b.disabled=true);
+}
+</script>
+</body>
+</html>

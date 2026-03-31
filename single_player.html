@@ -1,0 +1,198 @@
+<!doctype html>
+<html>
+<head>
+<title>Hand Cricket Game</title>
+
+<style>
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background: radial-gradient(circle, #0f2027, #203a43, #2c5364);
+    font-family: Arial, sans-serif;
+    color:white;
+}
+
+.game-container{
+    background: rgba(0,0,0,0.8);
+    padding:30px;
+    border-radius:20px;
+    width:380px;
+    text-align:center;
+    box-shadow:0 0 30px rgba(0,255,200,0.3);
+}
+
+h1{
+    margin-bottom:10px;
+}
+
+.scoreboard{
+    display:flex;
+    justify-content:space-between;
+    background:#111;
+    padding:15px;
+    border-radius:10px;
+    margin:15px 0;
+    font-size:20px;
+}
+
+.scoreboard div{
+    width:45%;
+}
+
+#scoreBox{
+    font-size:40px;
+    color:#00ffcc;
+}
+
+#targetBox{
+    font-size:18px;
+    color:yellow;
+}
+
+.choices{
+    margin-top:15px;
+}
+
+.choices button{
+    width:50px;
+    height:50px;
+    margin:5px;
+    font-size:18px;
+    border-radius:50%;
+    border:none;
+    background:#ff416c;
+    color:white;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.choices button:hover{
+    transform:scale(1.1);
+    background:#ff4b2b;
+}
+
+#comp{
+    margin-top:10px;
+    font-size:18px;
+    color:#ccc;
+}
+
+#message{
+    margin-top:10px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.highlight{
+    color:#00ffcc;
+    font-weight:bold;
+}
+
+.result{
+    font-size:22px;
+    margin-top:10px;
+    color:gold;
+}
+
+</style>
+
+<script>
+
+let runs = 0;
+let target = 0;
+let innings = 1;
+
+function play(num){
+
+    let random_run = Math.floor(Math.random() * 6) + 1;
+
+    document.getElementById("comp").innerHTML =
+        "Computer chose: <span class='highlight'>" + random_run + "</span>";
+
+    if(num != random_run){
+
+        runs += num;
+        document.getElementById("scoreBox").innerText = runs;
+
+        if(innings == 2 && runs > target){
+            document.getElementById("message").innerHTML =
+                "<div class='result'>🎉 YOU WIN!</div>";
+            disableGame();
+        }
+
+    } else {
+
+        if(innings == 1){
+            target = runs;
+            innings = 2;
+            runs = 0;
+
+            document.getElementById("message").innerHTML =
+                "❌ OUT! Target: <span class='highlight'>" + (target+1) + "</span>";
+
+            document.getElementById("targetBox").innerText = "Target: " + (target+1);
+            document.getElementById("scoreBox").innerText = runs;
+
+        } else {
+
+            if(runs > target){
+                showResult("🎉 YOU WIN!");
+            } else if(runs == target){
+                showResult("🤝 DRAW!");
+            } else{
+                showResult("😢 YOU LOSE!");
+            }
+        }
+    }
+}
+
+function showResult(text){
+    document.getElementById("message").innerHTML =
+        "<div class='result'>" + text + "</div>";
+    disableGame();
+}
+
+function disableGame(){
+    let btns = document.querySelectorAll(".choices button");
+    btns.forEach(btn => btn.disabled = true);
+}
+
+</script>
+</head>
+
+<body>
+
+<div class="game-container">
+
+<h1>🏏 HAND CRICKET</h1>
+
+<div class="scoreboard">
+    <div>
+        YOU<br>
+        <span id="scoreBox">0</span>
+    </div>
+
+    <div id="targetBox">
+        1st Innings
+    </div>
+</div>
+
+<div class="choices">
+    <button onclick="play(1)">1</button>
+    <button onclick="play(2)">2</button>
+    <button onclick="play(3)">3</button>
+    <button onclick="play(4)">4</button>
+    <button onclick="play(5)">5</button>
+    <button onclick="play(6)">6</button>
+</div>
+
+<p id="comp"></p>
+<p id="message">Game Started!</p>
+
+</div>
+
+</body>
+</html>

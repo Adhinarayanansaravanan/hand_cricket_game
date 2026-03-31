@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+    <title>Hand Cricket - vs Computer</title>
+
+    <style>
+        body{
+            margin: 0;
+            font-family: Arial;
+            background: linear-gradient(to bottom, #0b6623, #013220);
+            color: white;
+            text-align: center;
+        }
+
+        h1{
+            padding: 15px;
+            background-color: black;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .scoreboard{
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            font-size: 22px;
+            background-color: rgba(0,0,0,0.6);
+            padding: 15px;
+            border-radius: 10px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .box{
+            padding: 10px 20px;
+        }
+
+        .vs{
+            font-size: 26px;
+            font-weight: bold;
+            color: yellow;
+        }
+
+        #status{
+            margin-top: 20px;
+            font-size: 22px;
+            min-height: 60px;
+        }
+
+        .choices{
+            margin-top: 30px;
+        }
+
+        .choices button{
+            width: 60px;
+            height: 60px;
+            margin: 10px;
+            font-size: 20px;
+            border-radius: 50%;
+            border: none;
+            background-color: orange;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .choices button:hover{
+            transform: scale(1.1);
+            background-color: gold;
+        }
+
+        .highlight{
+            font-size: 24px;
+            color: cyan;
+        }
+
+        .result{
+            font-size: 28px;
+            margin-top: 20px;
+            color: yellow;
+        }
+
+    </style>
+
+    <script>
+        let playerScore = 0;
+        let computerScore = 0;
+        let innings = 1;
+        let target = 0;
+
+        let first = localStorage.getItem("firstBatsman");
+
+        function play(playerChoice){
+            let compChoice = Math.floor(Math.random() * 6) + 1;
+
+            document.getElementById("status").innerHTML =
+                "You: <span class='highlight'>" + playerChoice + "</span> | Computer: <span class='highlight'>" + compChoice + "</span>";
+
+            let playerBatting =
+                (innings === 1 && first === "Player") ||
+                (innings === 2 && first === "Computer");
+
+            if(playerChoice === compChoice){
+                document.getElementById("status").innerHTML += "<br>❌ OUT!";
+
+                if(innings === 1){
+                    target = playerBatting ? playerScore + 1 : computerScore + 1;
+                    innings = 2;
+
+                    document.getElementById("status").innerHTML +=
+                        "<br>🎯 Target: " + target + "<br>--- 2nd Innings ---";
+                } else {
+                    endGame();
+                }
+            } else {
+                if(playerBatting){
+                    playerScore += playerChoice;
+                } else {
+                    computerScore += compChoice;
+                }
+            }
+
+            updateScore();
+
+            if(innings === 2){
+                if(playerScore >= target && first === "Computer"){
+                    endGame();
+                }
+                if(computerScore >= target && first === "Player"){
+                    endGame();
+                }
+            }
+        }
+
+        function updateScore(){
+            document.getElementById("playerScore").innerText = playerScore;
+            document.getElementById("computerScore").innerText = computerScore;
+        }
+
+        function endGame(){
+            let result = "";
+
+            if(playerScore > computerScore){
+                result = "🎉 YOU WIN!";
+            } else if(computerScore > playerScore){
+                result = "💻 COMPUTER WINS!";
+            } else {
+                result = "🤝 DRAW!";
+            }
+
+            document.getElementById("status").innerHTML +=
+                "<div class='result'>" + result + "</div>";
+
+            let btns = document.querySelectorAll(".choices button");
+            btns.forEach(btn => btn.disabled = true);
+        }
+    </script>
+
+</head>
+
+<body>
+
+    <h1>🏏 HAND CRICKET 🎮</h1>
+
+    <div class="scoreboard">
+        <div class="box">
+            YOU<br>
+            <span id="playerScore">0</span>
+        </div>
+
+        <div class="vs">VS</div>
+
+        <div class="box">
+            COMPUTER<br>
+            <span id="computerScore">0</span>
+        </div>
+    </div>
+
+    <p id="status">Game Started!</p>
+
+    <div class="choices">
+        <button onclick="play(1)">1</button>
+        <button onclick="play(2)">2</button>
+        <button onclick="play(3)">3</button>
+        <button onclick="play(4)">4</button>
+        <button onclick="play(5)">5</button>
+        <button onclick="play(6)">6</button>
+    </div>
+
+</body>
+</html>

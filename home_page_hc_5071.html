@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+<head>
+    <title>Hand Cricket Classic</title>
+    <style>
+        body{
+            margin: 0;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            overflow: hidden; /* prevent scrollbars */
+        }
+
+        canvas{
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1; /* behind content */
+        }
+
+        h1{
+            color: yellow;
+            font-size: 50px;
+            margin-top: 40px;
+            text-shadow: 3px 3px 5px red;
+        }
+
+        h2{
+            color: white;
+        }
+
+        .menu-box{
+            background-color: rgba(255,255,255,0.1);
+            width: 400px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 20px yellow;
+        }
+
+        button{
+            width: 250px;
+            padding: 12px;
+            margin: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .play-btn{
+            background-color: limegreen;
+        }
+
+        .multi-btn{
+            background-color: orange;
+        }
+
+        .about-btn{
+            background-color: dodgerblue;
+        }
+
+        .exit-btn{
+            background-color: red;
+            color: white;
+        }
+
+        button:hover{
+            opacity: 0.8;
+        }
+
+        footer{
+            color: white;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+
+<body>
+<canvas id="stadiumCanvas"></canvas>
+
+<h1>🏏 HAND CRICKET CLASSIC 🏏</h1>
+
+<div class="menu-box">
+    <h2>Main Menu</h2>
+
+    <button class="play-btn" onclick="location.href='TOSS.html'">
+        Player vs Player match
+    </button>
+
+    <button class="multi-btn" onclick="location.href='multiplayer_game.html'">
+        Multi Player Match
+    </button>
+
+    <button class="play-btn" onclick="location.href='player_vs_computer_toss.html'">
+        Player vs Computer match
+    </button>
+
+    <button class="about-btn" onclick="alert('Hand Cricket Classic\nCreated as a fun cricket number game!')">
+        About Game
+    </button>
+
+    <button class="exit-btn" onclick="alert('Thanks for playing!')">
+        Exit
+    </button>
+</div>
+
+<footer>
+    <p>Enjoy the Game 🎮</p>
+</footer>
+
+<script>
+const canvas = document.getElementById("stadiumCanvas");
+const ctx = canvas.getContext("2d");
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    drawStadium();
+}
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+function drawStadium() {
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+
+    // SKY
+    const sky = ctx.createLinearGradient(0,0,0,h*0.5);
+    sky.addColorStop(0,'#87ceeb');
+    sky.addColorStop(1,'#a0d8ef');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0,0,w,h*0.5);
+
+    // OVAL STADIUM STANDS (layered for depth)
+    for(let i=0;i<5;i++){
+        let radiusX = w*0.48 - i*20;
+        let radiusY = h*0.35 - i*10;
+        ctx.beginPath();
+        ctx.ellipse(w/2,h*0.55,radiusX,radiusY,0,0,Math.PI*2);
+        ctx.fillStyle = `rgba(${100+i*20},${100+i*20},${100+i*20},0.7)`; // darker layers for depth
+        ctx.fill();
+    }
+
+    // CRICKET OVAL FIELD
+    ctx.beginPath();
+    ctx.ellipse(w/2,h*0.55,w*0.42,h*0.32,0,0,Math.PI*2);
+    const fieldGradient = ctx.createRadialGradient(w/2,h*0.55,50,w/2,h*0.55,w*0.42);
+    fieldGradient.addColorStop(0,"#66bb66");
+    fieldGradient.addColorStop(1,"#2e7d32");
+    ctx.fillStyle = fieldGradient;
+    ctx.fill();
+
+    // PITCH
+    const pitchWidth = w*0.05;
+    const pitchHeight = h*0.25;
+    ctx.fillStyle = "#c2a36b";
+    ctx.fillRect((w-pitchWidth)/2, h*0.55 - pitchHeight/2, pitchWidth, pitchHeight);
+
+    // STUMPS TOP
+    ctx.fillStyle = "white";
+    const stumpWidth = 5;
+    const stumpHeight = 20;
+    const pitchTop = h*0.55 - pitchHeight/2;
+    const pitchBottom = h*0.55 + pitchHeight/2;
+    ctx.fillRect((w/2)-15, pitchTop, stumpWidth, stumpHeight);
+    ctx.fillRect((w/2), pitchTop, stumpWidth, stumpHeight);
+    ctx.fillRect((w/2)+15, pitchTop, stumpWidth, stumpHeight);
+
+    // STUMPS BOTTOM
+    ctx.fillRect((w/2)-15, pitchBottom-20, stumpWidth, stumpHeight);
+    ctx.fillRect((w/2), pitchBottom-20, stumpWidth, stumpHeight);
+    ctx.fillRect((w/2)+15, pitchBottom-20, stumpWidth, stumpHeight);
+}
+</script>
+</body>
+</html>
